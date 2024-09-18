@@ -27,7 +27,7 @@ import contact from "./contact.svg";
 import soundon from "./soundon.png";
 import soundoff from "./soundoff.png";
 
-export default {
+export {
   css,
   express,
   git,

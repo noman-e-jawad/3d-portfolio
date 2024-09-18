@@ -1,14 +1,22 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 
 import { foxScene } from "../assets/3d";
 
-const Fox = (currentAnimation, ...props) => {
+// 3D Model from: https://sketchfab.com/3d-models/fox-f372c04de44640fbb6a4f9e4e5845c78
+const Fox = ({ currentAnimation, ...props }) => {
   const group = useRef();
   const { nodes, materials, animations } = useGLTF(foxScene);
   const { actions } = useAnimations(animations, group);
 
-  useEffect(() => {}, [actions, currentAnimation]);
+  // This effect will run whenever the currentAnimation prop changes
+  useEffect(() => {
+    Object.values(actions).forEach((action) => action.stop());
+
+    if (actions[currentAnimation]) {
+      actions[currentAnimation].play();
+    }
+  }, [actions, currentAnimation]);
 
   return (
     <group ref={group} {...props} dispose={null}>
@@ -49,4 +57,5 @@ const Fox = (currentAnimation, ...props) => {
   );
 };
 
+useGLTF.preload(foxScene);
 export default Fox;

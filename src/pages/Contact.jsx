@@ -2,28 +2,33 @@ import { useState, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import emailjs from "@emailjs/browser";
 import { Fox } from "../models";
-import { Loader } from "../components";
+import { Loader, Alert } from "../components";
+import useAlerts from "../hooks/useAlerts";
 const Contact = () => {
   const formRef = useRef(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [currentAnimation, setCurrentAnimation] = useState("Idle");
+  const { alert, showAlert, hideAlert } = useAlerts();
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  const handleFocus = (e) => {};
-  const handleBlur = (e) => {};
+  const handleFocus = (e) => setCurrentAnimation("walk");
+  const handleBlur = (e) => setCurrentAnimation("idle");
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setCurrentAnimation("hit");
 
     emailjs
       .send(
         import.meta.env.VITE_APP_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_APP_EMAILJS_TEMPLATE_ID,
         {
-          form_name: form.name,
+          from_name: form.name,
           to_name: "Noman E Jawad",
-          form_email: form.email,
+          from_email: form.email,
           to_email: "nomanzawad@gmail.com",
           message: form.message,
         },
@@ -31,15 +36,31 @@ const Contact = () => {
       )
       .then(() => {
         setIsLoading(false);
-        setForm({ name: "", email: "", message: "" });
+        showAlert({
+          show: true,
+          text: "Message sent successfully! 😃",
+          type: "success",
+        });
+        setTimeout(() => {
+          hideAlert();
+          setCurrentAnimation("idle");
+          setForm({ name: "", email: "", message: "" });
+        }, [3000]);
       })
       .catch((error) => {
         setIsLoading(false);
+        setCurrentAnimation("idle");
         console.log(error);
+        showAlert({
+          show: true,
+          text: "I didn't revice your  message 😢",
+          type: "danger",
+        });
       });
   };
   return (
     <section className="relative flex lg:flex-row flex-col max-container">
+      {alert.show && <Alert {...alert} />}
       <div className="flex-1 min-w-[50%] flex flex-col">
         <h1 className="head-text">Get In Touch</h1>
         <form
@@ -109,11 +130,13 @@ const Contact = () => {
             far: 1000,
           }}
         >
-          <directionalLight intensity={0.5} position={[0, 0, 1]} />
+          <directionalLight intensity={2.5} position={[0, 0, 1]} />
+          <ambientLight intensity={0.5} />
           <Suspense fallback={<Loader />}>
             <Fox
+              currentAnimation={currentAnimation}
               position={[0.5, 0.35, 0]}
-              rotation={[12, 0, 0]}
+              rotation={[12.629, -0.6, 0]}
               scale={[0.5, 0.5, 0.5]}
             />
           </Suspense>
